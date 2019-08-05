@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>name</key>
+    <string>Diff Highlight</string>
+    <key>settings</key>
+    <array>
+        <dict>
+            <key>settings</key>
+            <dict>
+                <key>background</key><string>#272822</string>
+                <key>foreground</key><string>#75715E</string>
+                <key>caret</key><string>#F29718</string>
+                <key>selection</key><string>#3E3D32</string>
+                <key>selectionBorder</key><string>#181E26</string>
+                <key>lineHighlight</key><string>#3E3D32</string>
+            </dict>
+        </dict>
+
+        <dict>
+            <key>scope</key>
+            <string>msg.added</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key><string>#A6E22E</string>
+            </dict>
+        </dict>
+
+        <dict>
+            <key>scope</key>
+            <string>msg.deleted</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key><string>#FF5544</string>
+            </dict>
+        </dict>
+        
+        <dict>
+            <key>scope</key>
+            <string>msg.title</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key><string>#E6DB74</string>
+            </dict>
+        </dict>
+
+        <dict>
+            <key>scope</key>
+            <string>msg.comment</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key><string>#75715E</string>
+            </dict>
+        </dict>
+    </array>
+    <key>uuid</key>
+    <string>403e2150-aad4-41ff-86d0-36d87510918e</string>
+</dict>
+</plist>

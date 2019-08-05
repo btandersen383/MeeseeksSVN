@@ -1,0 +1,28 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Status Output
+file_extensions: []
+scope: source.statusout
+contexts:
+  main:
+    - match: SVN Project Status
+      comment: ...
+      push:
+        - meta_scope: msg.title
+        - match: '[\r\n]'
+          pop: true
+    - match: '^ *M'
+      push: modified
+    - match: ^D
+      push: deleted
+
+  modified:
+    - meta_scope: msg.modified
+    - match: '[\r\n]'
+      pop: true
+
+  deleted:
+    - meta_scope: msg.deleted
+    - match: '[\r\n]'
+      pop: true

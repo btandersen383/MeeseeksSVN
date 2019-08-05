@@ -38,14 +38,14 @@ class SvnStatusCommand(MeeseeksCommand):
             path = self.project_path()
 
         out = self.run_command('status', path)
-        info = self.format_info(out)
-        sublime.active_window().active_view().show_popup(
-                content=info, max_width=2000, max_height=3000)
+        # info = self.format_info(out)
+        # sublime.active_window().active_view().show_popup(
+        #         content=info, max_width=2000, max_height=3000)
 
-        panel = sublime.active_window().create_output_panel("hello")
-        # panel.set_syntax_file('Packages/MyFirstPlugin/highlight.tmLanguage')
-        # panel.settings().set('color_scheme', 'Packages/MyFirstPlugin/highlight.hidden-tmTheme')
-        sublime.active_window().run_command('show_panel',{"panel":"output.hello"})
+        panel = sublime.active_window().create_output_panel("status")
+        panel.set_syntax_file('Packages/MyFirstPlugin/syntax/status.sublime-syntax')
+        panel.settings().set('color_scheme', 'Packages/MyFirstPlugin/syntax/status.hidden-tmTheme')
+        sublime.active_window().run_command('show_panel',{"panel":"output.status"})
         panel.run_command("append", {"characters": out})
 
     def format_info(self, message):
@@ -121,10 +121,12 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
         self.view.set_name("Diff View")
         self.view.set_scratch(True)
         self.view.set_read_only(True)
+        self.view.set_syntax_file('Packages/MyFirstPlugin/syntax/diff.sublime-syntax')
+        self.view.settings().set('color_scheme', 'Packages/MyFirstPlugin/syntax/diff.hidden-tmTheme')
 
-        removed, added = self.get_regions(diff)
-        print (added)
-        self.view.add_regions(key="mark", regions=added, scope="comment")
+        # removed, added = self.get_regions(diff)
+        # print (added)
+        # self.view.add_regions(key="mark", regions=added, scope="comment")
 
     # def get_regions(self, message):
     #     return message

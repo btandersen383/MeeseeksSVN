@@ -2,5 +2,10 @@
     { "caption": "-"},
     { "caption": "SVN Diff", "command": "svn_show_diff" },
     { "caption": "SVN Status", "command": "svn_status" },
+    { "caption": "SVN Add", "command": "svn_add" },
+    { "caption": "SVN Commit", "command": "svn_commit" },
+    { "caption": "SVN Update", "command": "svn_update" }, 
+    { "caption": "SVN Revert", "command": "svn_revert" },
+    { "caption": "SVN Log", "command": "svn_log" },
     { "caption": "-"},
 ]

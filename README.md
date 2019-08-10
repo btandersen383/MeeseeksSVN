@@ -30,3 +30,4 @@ List of todo's that I want to implement:
 * svn revert
 * svn blame
 * svn check for updates on file loaded
+    * pop up message that remote file has changes

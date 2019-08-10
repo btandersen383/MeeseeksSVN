@@ -8,6 +8,18 @@
     // Determines how many lines of context to include in a file diff
     "context_lines": 3,
 
+    // Determines what will print on status command
+    // Set the verbose flag on the status command
+    "set_status_verbose": false,
+    // Show Modified files
+    "show_modified": true,
+    // Show Deleted files
+    "show_deleted": true,
+    // Show Untracked files
+    "show_untracked": true,
+    // Show Added files
+    "show_added": true,
+
     // Path to svn.exe
     // This plugin is based on TortoiseSVN command line tools. You will need
     // these tools installed and have you PATH set to point to svn.exe

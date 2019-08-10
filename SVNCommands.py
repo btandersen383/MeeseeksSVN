@@ -24,6 +24,7 @@ class MeeseeksCommand(sublime_plugin.WindowCommand):
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
         # execute command and return decoded output
+        # todo consider replacing Popen with call/run function
         out, err = subprocess.Popen(command, 
                                     stdout=subprocess.PIPE, 
                                     stderr=subprocess.PIPE, 
@@ -31,8 +32,9 @@ class MeeseeksCommand(sublime_plugin.WindowCommand):
         if err:
             util.debug ('command error')
             util.debug (err.decode('utf-8').replace('\r', ''))
-            return err.decode('utf-8').replace('\r', '')
-        return out.decode('utf-8').replace('\r', '')
+            return err.decode('utf-8').replace('\r', ''), False
+        return out.decode('utf-8').replace('\r', ''), True
+        #todo, add success/fail return
 
 
 class SvnStatusCommand(MeeseeksCommand):
@@ -42,20 +44,16 @@ class SvnStatusCommand(MeeseeksCommand):
         """ Callback function for svn_status command """
         util.debug('Run status cmd')
 
-        # choose which path to follow
-        if paths is None:
-            file = util.project_path()
-        else:
-            file = paths[0] # comes as list of strings
-
-        # run command
-        out = self.run_command(command='status', files=file)
+        # get the path to show status
+        file, file_name = util.get_files(paths)
+        out, status = self.run_command(command='status', files=file)
 
         # set up and display output
         panel = sublime.active_window().create_output_panel('status')
         panel.set_syntax_file('Packages/MeeseeksSVN/syntax/status.sublime-syntax')
         panel.settings().set('color_scheme', 'Packages/MeeseeksSVN/syntax/status.hidden-tmTheme')
         sublime.active_window().run_command('show_panel',{'panel':'output.status'})
+        out = self.format_info(out)
         panel.run_command('append', {'characters': out})
 
     def format_info(self, message):
@@ -63,11 +61,19 @@ class SvnStatusCommand(MeeseeksCommand):
         message = message.split('\n')
         message.pop() # remove empty end string due to \n
         html_message = ''
+        # todo add in settings to show modified/deleted/all/untracked, etc
+        print ('mod:' + str(settings.get('show_modified')))
         for mes in message:
-            if mes[0] is 'M':
-                html_message += ('<font style="color:#4455FF;">' + mes + '</font><br>')
-            elif mes[0] is 'D':
-                html_message +=('<font style="color:#FF5544">' + mes + '</font><br>')
+            status = mes.split()[0]
+            if status is 'M' and settings.get('show_modified'):
+                html_message +=(mes + '\n')
+            elif status is 'D' and settings.get('show_deleted'):
+                html_message +=(mes + '\n')
+            elif status is '?' and settings.get('show_untracked'):
+                html_message +=(mes + '\n')
+            elif status is 'A' and settings.get('show_added'):
+                html_message +=(mes + '\n')
+
         return html_message
 
 
@@ -76,20 +82,14 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, paths=None):
         """ Callback to execute command """
-        util.debug('Showing differences')
+        util.debug('Run show diff cmd')
 
         # get the file/folder path and name
-        view = sublime.active_window().active_view()
-        if paths is None:
-            file = view.file_name().replace('\\', '/')
-            file_name = file.split('/').pop()
-        else:
-            file = paths[0]
-            file_name = file.split('\\').pop()
+        file, file_name = util.get_files(paths)
 
         # get settings and run command
         lines = settings.get('context_lines')
-        out = MeeseeksCommand.run_command(self, 
+        out, status = MeeseeksCommand.run_command(self, 
                                           command='diff', 
                                           files=file, 
                                           flags='--diff-cmd=diff -x -U' + str(lines))
@@ -115,11 +115,11 @@ class SvnGutterDiffCommand(MeeseeksCommand):
 
     def run(self):
         """ Callback to run command """
-        util.debug('Updating gutter with changes')
+        util.debug('Run gutter diff cmd')
         file = sublime.active_window().active_view().file_name().replace('\\', '/')
 
         # create variable to change context size for easier processing
-        out = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U0')
+        out, status = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U0')
         added, removed = self.get_regions(out)
         sublime.active_window().active_view().add_regions(
             key='inserted', regions=added, 
@@ -177,6 +177,70 @@ class SvnGutterDiffCommand(MeeseeksCommand):
                 #     removed.append(region)
 
         return added, removed # todo set region as whole line
+
+
+class SvnAddCommand(MeeseeksCommand):
+    """ Command to add a file/folder to the svn commit """
+
+    def run(self, paths=None):
+        util.debug ('Run add cmd')
+
+        file, file_name = util.get_files(paths)
+        out, status = self.run_command(command='add', files=file)
+
+        # check for success
+        if status:
+            util.debug ('File added')
+            # todo, add setting for popup
+            sublime.active_window().active_view().show_popup(
+                    content='File Added', max_width=2000, max_height=3000)
+        else:
+            util.debug ('File not added')
+            util.debug (out)
+            sublime.active_window().active_view().show_popup(
+                    content='Add Failed!', max_width=2000, max_height=3000)
+
+
+class SvnCommitCommand(MeeseeksCommand):
+    """ Command to commit the state to the svn repo """
+
+    def run(self, paths=None):
+        util.debug ('Run commit cmd')
+
+
+class SvnUpdateCommand(MeeseeksCommand):
+    """ Command to update the local svn copy """
+
+    def run(self, paths=None):
+        util.debug ('Run update cmd')
+
+
+class SvnRevertCommand(MeeseeksCommand):
+    """ Revert the file/folder to its unchanged state """
+
+    def run(self, paths=None):
+        util.debug ('Run revert cmd')
+
+        file, file_name = util.get_files(paths)
+        out, status = self.run_command(command='revert', files=file)
+
+        if status:
+            util.debug ('File reverted')
+            # todo, add setting for popup
+            sublime.active_window().active_view().show_popup(
+                    content='File Reverted', max_width=2000, max_height=3000)
+        else:
+            util.debug ('File not reverted')
+            util.debug (out)
+            sublime.active_window().active_view().show_popup(
+                    content='Revert Failed!', max_width=2000, max_height=3000)
+
+#todo should probably be text command...
+class SvnLogCommand(MeeseeksCommand):
+    """ Command to show the log of the svn repo """
+
+    def run(self, paths=None):
+        util.debug ('Run log cmd')
 
 
 class MeeseeksEvents(sublime_plugin.EventListener):

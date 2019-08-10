@@ -5,20 +5,37 @@
     // Meeseeks Default Settings
     "debug": true,
  
+    // Diff Command Options
     // Determines how many lines of context to include in a file diff
     "context_lines": 3,
 
-    // Determines what will print on status command
+    // Status Command Options
     // Set the verbose flag on the status command
-    "set_status_verbose": false,
+    "status_set_verbose": false,
     // Show Modified files
-    "show_modified": true,
+    "status_show_modified": true,
     // Show Deleted files
-    "show_deleted": true,
+    "status_show_deleted": true,
     // Show Untracked files
-    "show_untracked": true,
+    "status_show_untracked": true,
     // Show Added files
-    "show_added": true,
+    "status_show_added": true,
+    // Show Added files
+    "status_show_updated": true,
+    // Show Added files
+    "status_show_conflict": true,
+    // Show Added files
+    "status_show_merged": true,
+
+    // Log Command Options
+    // options: 'tab', 'panel'
+    "log_display": "tab",
+    // Limit max messages
+    "log_limit": 50,
+
+    // Show popup messages after a command finishes
+    // If false, no idication is given as to command success
+    "popup_message": true,
 
     // Path to svn.exe
     // This plugin is based on TortoiseSVN command line tools. You will need

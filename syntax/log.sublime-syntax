@@ -1,0 +1,42 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Log Highlight
+file_extensions: []
+scope: source.logout
+hidden: true
+contexts:
+  main:
+    - match: '^-*$'
+      push: title
+    - match: '@'
+      push: header
+    - match: ^\+
+      push: added
+    - match: ^-
+      push: deleted
+
+  title:
+    - meta_scope: msg.title
+    - match: '[\r\n]'
+      pop: true
+
+  header:
+    - meta_scope: msg.header
+    - match: '[\r\n]'
+      pop: true
+
+  added:
+    - meta_scope: msg.added
+    - match: '[\r\n]'
+      pop: true
+
+  deleted:
+    - meta_scope: msg.deleted
+    - match: '[\r\n]'
+      pop: true
+
+  comment:
+    - meta_scope: msg.comment
+    - match: '[\r\n]'
+      pop: true

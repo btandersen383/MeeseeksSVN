@@ -13,3 +13,20 @@ Clone the repo into your 'Packages' directory under Sublime Text 3 app data.
 
 ## Using
 Just right click or use the shortcut to get a status report of the project or diff a file/folder. The gutter will update on saving a file. For now updating on modification slows down the editor quite noticably.
+
+## TODO
+List of todo's that I want to implement:
+* svn log, like with status and associated flags as settings
+* svn status, add -v and -u settings to show more info
+* svn add
+* svn commit
+* svn update
+* svn resolve
+    * this would be a new window with 3 groups
+    * left and right groups are read only
+    * center group is resolution
+    * could use phantoms/regions to highlight conflicts
+    * how to scroll in sync?
+* svn revert
+* svn blame
+* svn check for updates on file loaded

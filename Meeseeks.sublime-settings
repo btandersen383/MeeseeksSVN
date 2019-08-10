@@ -27,11 +27,18 @@
     // Show Added files
     "status_show_merged": true,
 
-    // Log Command Options
+    // Log/Blame Command Options
+    // Set where to display the log information
     // options: 'tab', 'panel'
     "log_display": "tab",
     // Limit max messages
     "log_limit": 50,
+    // Set verbose flag
+    "log_verbose": false,
+    // Set revision range to show
+    // ex. "log_revision_range": "183:HEAD",
+    // ex. "log_revision_range": "{2018-12-04}:{2019-02-17}"
+    "log_revision_range": false, 
 
     // Show popup messages after a command finishes
     // If false, no idication is given as to command success

@@ -224,6 +224,8 @@ class SvnCommitCommand(MeeseeksCommand):
     file_name = None
 
     def run(self, paths=None):
+        """ Callback to run command """
+
         util.debug ('Run commit cmd')
 
         # save the file/folder to be committed
@@ -251,6 +253,8 @@ class SvnUpdateCommand(MeeseeksCommand):
     """ Command to update the local svn copy """
 
     def run(self, paths=None):
+        """ Callback to run command """
+
         util.debug ('Run update cmd')
 
         file, file_name = util.get_files(paths)
@@ -264,6 +268,8 @@ class SvnRevertCommand(MeeseeksCommand):
     """ Revert the file/folder to its unchanged state """
 
     def run(self, paths=None):
+        """ Callback to run command """
+
         util.debug ('Run revert cmd')
 
         file, file_name = util.get_files(paths)
@@ -277,6 +283,8 @@ class SvnLogCommand(sublime_plugin.TextCommand):
     """ Command to show the log of the svn repo """
 
     def run(self, edit, paths=None):
+        """ Callback to run command """
+
         util.debug ('Run log cmd')
 
         file, file_name = util.get_files(paths)
@@ -287,6 +295,15 @@ class SvnLogCommand(sublime_plugin.TextCommand):
         log_view.set_name(file_name + ' - Log View')
         log_view.set_scratch(True)
         log_view.set_read_only(True)
+
+
+################################################################################
+class SvnBlameCommand(sublime_plugin.TextCommand):
+    """ Command to show the blame log of the svn repo """
+
+    def run(self, edit, paths=None):
+        print ("not imp")
+
 
 ################################################################################
 class MeeseeksEvents(sublime_plugin.EventListener):

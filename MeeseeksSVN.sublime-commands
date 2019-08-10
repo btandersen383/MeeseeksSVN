@@ -2,4 +2,8 @@
     { "caption": "Meeseeks: Status", "command": "svn_status"},
     { "caption": "Meeseeks: Diff", "command": "svn_diff"},
     { "caption": "Meeseeks: Diff Gutter", "command": "svn_gutter_diff"}
+    { "caption": "Meeseeks: Add", "command": "svn_add"},
+    { "caption": "Meeseeks: Commit", "command": "svn_commit"},
+    { "caption": "Meeseeks: Update", "command": "svn_update"},
+    { "caption": "Meeseeks: Revert", "command": "svn_revert"},
 ]

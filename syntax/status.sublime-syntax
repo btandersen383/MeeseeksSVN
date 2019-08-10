@@ -4,6 +4,7 @@
 name: Status Output
 file_extensions: []
 scope: source.statusout
+hidden: true
 contexts:
   main:
     - match: SVN Project Status

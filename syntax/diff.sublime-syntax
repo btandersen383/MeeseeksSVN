@@ -4,10 +4,13 @@
 name: Diff Highlight
 file_extensions: []
 scope: source.diffout
+hidden: true
 contexts:
   main:
-    - match: '@'
+    - match: 'Index:'
       push: title
+    - match: '@'
+      push: header
     - match: ^\+
       push: added
     - match: ^-
@@ -15,6 +18,11 @@ contexts:
 
   title:
     - meta_scope: msg.title
+    - match: '[\r\n]'
+      pop: true
+
+  header:
+    - meta_scope: msg.header
     - match: '[\r\n]'
       pop: true
 

@@ -20,6 +20,15 @@
 
         <dict>
             <key>scope</key>
+            <string>msg.title</string>
+            <key>settings</key>
+            <dict>
+                <key>foreground</key><string>#F92672</string>
+            </dict>
+        </dict>
+
+        <dict>
+            <key>scope</key>
             <string>msg.added</string>
             <key>settings</key>
             <dict>
@@ -38,7 +47,7 @@
         
         <dict>
             <key>scope</key>
-            <string>msg.title</string>
+            <string>msg.header</string>
             <key>settings</key>
             <dict>
                 <key>foreground</key><string>#E6DB74</string>

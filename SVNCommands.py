@@ -1,43 +1,45 @@
 import sublime
 import sublime_plugin
-import os
-import os.path
 import re
 import subprocess
 
+from .lib import util
+
 class MeeseeksCommand(sublime_plugin.WindowCommand):
-    """Used to fun abstract functions used by all commands"""
+    """ Used to fun abstract functions used by all commands """
 
     def run_command(self, command, files=None, flags=""):
-        """Used to run a basic command line call to svn"""
+        """ Used to run a basic command line call to svn """
+        util.debug("Running cmd: " + command)
         command = 'svn '+command+' '+flags+' "'+files+'"' #need double quotes on path
-        out, err = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
+
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+
+        out, err = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo).communicate()
         return out.decode("utf-8").replace("\r", "")
 
     def project_path(self):
-        """Used to the the current project path, should be moved to util.py"""
+        """ Used to the the current project path, should be moved to util.py """
         project_data = sublime.active_window().extract_variables()
         project_path = project_data["project_path"].replace('\\', '/')
         return project_path
 
-    def debug(self, message):
-        """Send output to console if debugging is enabled"""
-        # if settings.get("debug", default=False):
-        print('Meeseeks: ' + str(message))
-
 
 class SvnStatusCommand(MeeseeksCommand):
-    """Used to run a status check on all files in the project"""
+    """ Used to run a status check on all files in the project """
 
-    def run(self, path=None):
-        """Callback function for svn_status command"""
-        self.debug("run status cmd")
+    def run(self, paths=None):
+        """ Callback function for svn_status command """
+        util.debug("Run status cmd")
 
         # eventually will pass a path to narrow status report
-        if path is None:
-            path = self.project_path()
+        if paths is None:
+            file = self.project_path()
+        else:
+            file = paths[0]
 
-        out = self.run_command('status', path)
+        out = self.run_command(command='status', files=file)
         # info = self.format_info(out)
         # sublime.active_window().active_view().show_popup(
         #         content=info, max_width=2000, max_height=3000)
@@ -49,7 +51,7 @@ class SvnStatusCommand(MeeseeksCommand):
         panel.run_command("append", {"characters": out})
 
     def format_info(self, message):
-        """Returns html formatted string to display status report"""
+        """ Returns html formatted string to display status report """
         message = message.split("\n")
         message.pop()
         html_message = ''
@@ -60,37 +62,66 @@ class SvnStatusCommand(MeeseeksCommand):
                 html_message +=('<font style="color:#FF5544">' + mes + '</font><br>')
         return html_message
 
+# DEPRECIATED
+# class SvnDiffCommand(MeeseeksCommand):
 
-class SvnDiffCommand(MeeseeksCommand):
-
-    def run(self):
-        view = sublime.active_window().active_view()
-        file = sublime.active_window().active_view().file_name().replace('\\', '/')
+#     def run(self, path=None):
+#         view = sublime.active_window().active_view()
+#         file = sublime.active_window().active_view().file_name().replace('\\', '/')
         
-        # create variable to change context size
-        out = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U3')
+#         # create variable to change context size
+#         out = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U3')
+
+#         diff_view = sublime.active_window().new_file()
+#         args = {'diff':out}
+#         diff_view.run_command("svn_show_diff", args)
+
+#         # removed, added = self.get_regions(out)
+#         # view.add_regions(key="removed", regions=added, icon="dot")
+
+
+class SvnShowDiffCommand(sublime_plugin.TextCommand):
+    """ Show a view of the file differences """
+
+    def run(self, edit, paths=None):
+        """ Callback to execute command """
+        util.debug("Showing differences")
+
+        view = sublime.active_window().active_view()
+        if paths is None:
+            file = sublime.active_window().active_view().file_name().replace('\\', '/')
+            file_name = file.split('/').pop()
+        else:
+            file = paths[0]
+            file_name = file.split('\\').pop()
+        out = MeeseeksCommand.run_command(self, command='diff', files=file, flags='--diff-cmd=diff -x -U3')
 
         diff_view = sublime.active_window().new_file()
-        args = {'diff':out}
-        diff_view.run_command("svn_show_diff", args)
-
-        # removed, added = self.get_regions(out)
-        # view.add_regions(key="removed", regions=added, icon="dot")
+        diff_view.insert(edit, 0, out)
+        diff_view.set_name(file_name + " - Diff View")
+        diff_view.set_scratch(True)
+        diff_view.set_read_only(True)
+        diff_view.set_syntax_file('Packages/MyFirstPlugin/syntax/diff.sublime-syntax')
+        diff_view.settings().set('color_scheme', 'Packages/MyFirstPlugin/syntax/diff.hidden-tmTheme')
 
 
 #todo this needs to be only a view command?
-class SvnDiffGutterCommand(MeeseeksCommand):
+class SvnGutterDiffCommand(MeeseeksCommand):
+    """ Shows in the gutter what changes have been made """
 
     def run(self):
+        """ Callback to run command """
+        util.debug("Updating gutter with changes")
         file = sublime.active_window().active_view().file_name().replace('\\', '/')
-                
+
         # create variable to change context size
         out = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U0')
         regions = self.get_regions(out)
         sublime.active_window().active_view().add_regions(
-            key="mark", regions=regions, scope="string", icon="dot", flags=sublime.HIDDEN | sublime.PERSISTENT)
+            key="mark", regions=regions, scope="markup.inserted", icon="Packages/MyFirstPlugin/icons/inserted.png", flags=sublime.HIDDEN | sublime.PERSISTENT)
 
     def get_regions(self, message):
+        """ Gets the added and removed lines to mark """
         message = message.split("\n")
         message.pop()
         added = []
@@ -111,40 +142,11 @@ class SvnDiffGutterCommand(MeeseeksCommand):
                     region = sublime.Region(point1, point1+1)
                     added.append(region)
 
-        return added
+        return added # todo set region as whole line
 
 
-class SvnShowDiffCommand(sublime_plugin.TextCommand):
-
-    def run(self, edit, diff):
-        self.view.insert(edit, 0, diff)
-        self.view.set_name("Diff View")
-        self.view.set_scratch(True)
-        self.view.set_read_only(True)
-        self.view.set_syntax_file('Packages/MyFirstPlugin/syntax/diff.sublime-syntax')
-        self.view.settings().set('color_scheme', 'Packages/MyFirstPlugin/syntax/diff.hidden-tmTheme')
-
-        # removed, added = self.get_regions(diff)
-        # print (added)
-        # self.view.add_regions(key="mark", regions=added, scope="comment")
-
-    # def get_regions(self, message):
-    #     return message
-
-    def get_regions(self, diff):
-        diff = diff.split("\n")
-        diff.pop()
-        online = 0
-        removed = []
-        added = []
-        for line in diff:
-            if line[0] is '-':
-                print (line)
-                removed.append(self.view.text_point(online, 1))
-            elif line[0] is '+':
-                print(line)
-                point = self.view.text_point(online, 1)
-                added.append(self.view.line(point))
-            online = online + 1
-
-        return removed, added
+class MeeseeksEvents(sublime_plugin.EventListener):
+    """ Plan to have live updates, need to get run cmd working properly """
+    def on_post_save(self, view):
+        print ("saved")
+        sublime.Window.run_command(view.window(), cmd="svn_gutter_diff")

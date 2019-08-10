@@ -1,0 +1,6 @@
+[
+    { "caption": "-"},
+    { "caption": "SVN Diff", "command": "svn_show_diff" },
+    { "caption": "SVN Status", "command": "svn_status" },
+    { "caption": "-"},
+]

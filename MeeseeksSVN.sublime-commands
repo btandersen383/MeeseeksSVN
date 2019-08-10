@@ -1,5 +1,5 @@
 [
     { "caption": "Meeseeks: Status", "command": "svn_status"},
     { "caption": "Meeseeks: Diff", "command": "svn_diff"},
-    { "caption": "Meeseeks: Diff Gutter", "command": "svn_diff_gutter"}
+    { "caption": "Meeseeks: Diff Gutter", "command": "svn_gutter_diff"}
 ]

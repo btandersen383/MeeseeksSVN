@@ -3,7 +3,7 @@ import sublime_plugin
 import re
 import subprocess
 
-from .lib import util
+from .lib import util, settings
 
 class MeeseeksCommand(sublime_plugin.WindowCommand):
     """ Used to fun abstract functions used by all commands """
@@ -19,12 +19,6 @@ class MeeseeksCommand(sublime_plugin.WindowCommand):
         out, err = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo).communicate()
         return out.decode("utf-8").replace("\r", "")
 
-    def project_path(self):
-        """ Used to the the current project path, should be moved to util.py """
-        project_data = sublime.active_window().extract_variables()
-        project_path = project_data["project_path"].replace('\\', '/')
-        return project_path
-
 
 class SvnStatusCommand(MeeseeksCommand):
     """ Used to run a status check on all files in the project """
@@ -35,7 +29,7 @@ class SvnStatusCommand(MeeseeksCommand):
 
         # eventually will pass a path to narrow status report
         if paths is None:
-            file = self.project_path()
+            file = util.project_path()
         else:
             file = paths[0]
 
@@ -45,8 +39,8 @@ class SvnStatusCommand(MeeseeksCommand):
         #         content=info, max_width=2000, max_height=3000)
 
         panel = sublime.active_window().create_output_panel("status")
-        panel.set_syntax_file('Packages/MyFirstPlugin/syntax/status.sublime-syntax')
-        panel.settings().set('color_scheme', 'Packages/MyFirstPlugin/syntax/status.hidden-tmTheme')
+        panel.set_syntax_file('Packages/MeeseeksSVN/syntax/status.sublime-syntax')
+        panel.settings().set('color_scheme', 'Packages/MeeseeksSVN/syntax/status.hidden-tmTheme')
         sublime.active_window().run_command('show_panel',{"panel":"output.status"})
         panel.run_command("append", {"characters": out})
 
@@ -101,8 +95,8 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
         diff_view.set_name(file_name + " - Diff View")
         diff_view.set_scratch(True)
         diff_view.set_read_only(True)
-        diff_view.set_syntax_file('Packages/MyFirstPlugin/syntax/diff.sublime-syntax')
-        diff_view.settings().set('color_scheme', 'Packages/MyFirstPlugin/syntax/diff.hidden-tmTheme')
+        diff_view.set_syntax_file('Packages/MeeseeksSVN/syntax/diff.sublime-syntax')
+        diff_view.settings().set('color_scheme', 'Packages/MeeseeksSVN/syntax/diff.hidden-tmTheme')
 
 
 #todo this needs to be only a view command?
@@ -118,7 +112,9 @@ class SvnGutterDiffCommand(MeeseeksCommand):
         out = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U0')
         regions = self.get_regions(out)
         sublime.active_window().active_view().add_regions(
-            key="mark", regions=regions, scope="markup.inserted", icon="Packages/MyFirstPlugin/icons/inserted.png", flags=sublime.HIDDEN | sublime.PERSISTENT)
+            key="mark", regions=regions, 
+            scope="markup.inserted", icon="Packages/MeeseeksSVN/icons/inserted.png", 
+            flags=sublime.HIDDEN | sublime.PERSISTENT)
 
     def get_regions(self, message):
         """ Gets the added and removed lines to mark """
@@ -147,6 +143,18 @@ class SvnGutterDiffCommand(MeeseeksCommand):
 
 class MeeseeksEvents(sublime_plugin.EventListener):
     """ Plan to have live updates, need to get run cmd working properly """
-    def on_post_save(self, view):
-        print ("saved")
+
+    def on_load(self, view):
+        """ Set gutter diff on file load """
+        util.debug ("file loaded")
         sublime.Window.run_command(view.window(), cmd="svn_gutter_diff")
+
+    def on_post_save(self, view):
+        """ Set gutter diff on file save """
+        util.debug ("file saved")
+        sublime.Window.run_command(view.window(), cmd="svn_gutter_diff")
+
+    def on_modified(self, view):
+        """ Set gutter diff on modification """
+        # slows everything down right now, looking for fix
+        util.debug ("file modified")

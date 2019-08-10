@@ -16,16 +16,23 @@ class MeeseeksCommand(sublime_plugin.WindowCommand):
         svn_path = settings.get('svn_path')
         if svn_path is False:
             svn_path = 'svn'
-        command = svn_path+' '+command+' '+flags+' "'+files+'"' #need double quotes for globbing
+        #need double quotes for globbing
+        command = svn_path+' '+command+' '+flags+' "'+files+'"'
 
         # work around to keep console from poping up
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
         # execute command and return decoded output
-        out, err = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo).communicate()
+        out, err = subprocess.Popen(command, 
+                                    stdout=subprocess.PIPE, 
+                                    stderr=subprocess.PIPE, 
+                                    startupinfo=startupinfo).communicate()
+        if err:
+            util.debug ('command error')
+            util.debug (err.decode('utf-8').replace('\r', ''))
+            return err.decode('utf-8').replace('\r', '')
         return out.decode('utf-8').replace('\r', '')
-        #todo check for error return
 
 
 class SvnStatusCommand(MeeseeksCommand):
@@ -71,17 +78,28 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
         """ Callback to execute command """
         util.debug('Showing differences')
 
+        # get the file/folder path and name
         view = sublime.active_window().active_view()
         if paths is None:
-            file = sublime.active_window().active_view().file_name().replace('\\', '/')
+            file = view.file_name().replace('\\', '/')
             file_name = file.split('/').pop()
         else:
             file = paths[0]
             file_name = file.split('\\').pop()
 
+        # get settings and run command
         lines = settings.get('context_lines')
-        out = MeeseeksCommand.run_command(self, command='diff', files=file, flags='--diff-cmd=diff -x -U' + str(lines))
+        out = MeeseeksCommand.run_command(self, 
+                                          command='diff', 
+                                          files=file, 
+                                          flags='--diff-cmd=diff -x -U' + str(lines))
 
+        # yes this is ugly but it works...
+        out = out.replace('Index:', '\n\nIndex:')
+        out = out.replace('\n', 'Diff for '+file_name, 1)
+
+        # Create new view and give output
+        # Note the use of syntax highlighting
         diff_view = sublime.active_window().new_file()
         diff_view.insert(edit, 0, out)
         diff_view.set_name(file_name + ' - Diff View')
@@ -100,37 +118,65 @@ class SvnGutterDiffCommand(MeeseeksCommand):
         util.debug('Updating gutter with changes')
         file = sublime.active_window().active_view().file_name().replace('\\', '/')
 
-        # create variable to change context size
+        # create variable to change context size for easier processing
         out = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U0')
-        regions = self.get_regions(out)
+        added, removed = self.get_regions(out)
         sublime.active_window().active_view().add_regions(
-            key='inserted', regions=regions, 
+            key='inserted', regions=added, 
             scope='markup.inserted', icon='Packages/MeeseeksSVN/icons/inserted.png', 
             flags=sublime.HIDDEN | sublime.PERSISTENT)
+        # sublime.active_window().active_view().add_regions(
+        #     key='inserted', regions=removed, 
+        #     scope='markup.deleted', icon='Packages/MeeseeksSVN/icons/deleted_top.png')#, 
+        #     #flags=sublime.HIDDEN | sublime.PERSISTENT)
 
     def get_regions(self, message):
         """ Gets the added and removed lines to mark """
         message = message.split('\n')
-        message.pop()
+        message.pop() # get rid of empty string at end
+        view = sublime.active_window().active_view()
         added = []
+        removed = []
+
+        # cycle through each line
         for index, mes in enumerate(message):
             line = message[index]
+            # signal for a change
             if line[0] is '@':
                 beg = line.index('+')
                 end = line.index('@', beg)
                 change = [int(a) for a in line[beg+1:end-1].split(',')]
+                # multiple lines changed
                 if len(change) is 2:
                     for x in range(change[1]):
                         point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
-                        region = sublime.Region(point1, point1+1)
+                        region = view.line(point1)#sublime.Region(point1, point1+1)
                         added.append(region)
                         change[0] += 1
+                # only one line changed
                 else:
                     point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
-                    region = sublime.Region(point1, point1+1)
+                    region = view.line(point1)#sublime.Region(point1, point1+1)
                     added.append(region)
 
-        return added # todo set region as whole line
+                    # one day i will get deleted lines working
+                # beg = line.index('-')
+                # end = line.index('+', beg)
+                # change = [int(a) for a in line[beg+1:end-1].split(',')]
+                # # multiple lines changed
+                # if len(change) is 2:
+                #     for x in range(change[1]):
+                #         point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
+                #         region = view.line(point1)#sublime.Region(point1, point1+1)
+                #         removed.append(region)
+                #         change[0] += 1
+                # # only one line changed
+                # else:
+                #     point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
+                #     region = view.line(point1)#sublime.Region(point1, point1+1)
+                #     removed.append(region)
+
+        return added, removed # todo set region as whole line
 
 
 class MeeseeksEvents(sublime_plugin.EventListener):

@@ -1,5 +1,16 @@
+/*
+    Markdown Preview default settings
+*/
 {
     // Meeseeks Default Settings
     "debug": true,
-    
+ 
+    // Determines how many lines of context to include in a file diff
+    "context_lines": 3,
+
+    // Path to svn.exe
+    // This plugin is based on TortoiseSVN command line tools. You will need
+    // these tools installed and have you PATH set to point to svn.exe
+    // If you wish to specify a path, define this setting
+    "svn_path": false,
 }

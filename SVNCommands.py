@@ -11,13 +11,21 @@ class MeeseeksCommand(sublime_plugin.WindowCommand):
     def run_command(self, command, files=None, flags=""):
         """ Used to run a basic command line call to svn """
         util.debug("Running cmd: " + command)
-        command = 'svn '+command+' '+flags+' "'+files+'"' #need double quotes on path
 
+        # chech for user defined svn.exe
+        svn_path = settings.get("svn_path")
+        if svn_path is False:
+            svn_path = 'svn'
+        command = svn_path+' '+command+' '+flags+' "'+files+'"' #need double quotes on path
+
+        # work around to keep console from poping up
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+        # execute command and return decoded output
         out, err = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo).communicate()
         return out.decode("utf-8").replace("\r", "")
+        #todo check for error return
 
 
 class SvnStatusCommand(MeeseeksCommand):
@@ -88,7 +96,9 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
         else:
             file = paths[0]
             file_name = file.split('\\').pop()
-        out = MeeseeksCommand.run_command(self, command='diff', files=file, flags='--diff-cmd=diff -x -U3')
+
+        lines = settings.get("context_lines")
+        out = MeeseeksCommand.run_command(self, command='diff', files=file, flags='--diff-cmd=diff -x -U' + str(lines))
 
         diff_view = sublime.active_window().new_file()
         diff_view.insert(edit, 0, out)

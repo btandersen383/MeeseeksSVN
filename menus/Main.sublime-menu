@@ -1,0 +1,38 @@
+[
+    {
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "MeeseeksSVN",
+                        "children":
+                        [
+                            {
+                                "command": "edit_settings", 
+                                "args": {
+                                    "base_file": "${packages}/MeeseeksSVN/Default (Windows).sublime-keymap",
+                                    "default": "{\n$0\n}\n"
+                                },
+                                "caption": "Key Bindings"
+                            },
+                            {
+                                "command": "edit_settings", 
+                                "args": {
+                                    "base_file": "${packages}/MeeseeksSVN/Meeseeks.sublime-settings",
+                                    "default": "{\n$0\n}\n"
+                                },
+                                "caption": "Settings"
+                            },
+                            { "caption": "-" }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

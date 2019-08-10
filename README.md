@@ -8,8 +8,14 @@ Specific kudos to:
 * [VCS Gutter](https://github.com/bradsokol/VcsGutter/blob/master/vcs_gutter.py) for images and relating API calls
 * [HypnotoadSVN](https://github.com/m-hall/HypnotoadSVN) for Sublime API examples and code structure
 
+Due to the existance of multiple other packages that do exaclty the same thing as this one, I will *not* be adding this to Package Control. I will make releases only on this repository in the form of `.sublime-package` files.
+
 ## Installing
+Option 1.
 Clone the repo into your 'Packages' directory under Sublime Text 3 app data.
+
+Option 2.
+Download the `.sublime-package` file and install manually.
 
 ## Using
 Just right click or use the shortcut to get a status report of the project or diff a file/folder. The gutter will update on saving a file. For now updating on modification slows down the editor quite noticably.

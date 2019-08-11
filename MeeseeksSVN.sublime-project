@@ -1,0 +1,19 @@
+{
+	"folders":
+	[
+		{
+			"path": "."
+		}
+	],
+   "build":
+   [
+      {
+         "name": "copy",
+         "shell_cmd": "bash install_files.sh"
+      },
+      {
+         "name": "clean",
+         "shell_cmd": "echo not imp"
+      }
+   ]
+}

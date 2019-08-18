@@ -22,8 +22,6 @@ Just right click or use the shortcut to get a status report of the project or di
 
 ## TODO
 List of todo's that I want to implement:
-* svn log, like with status and associated flags as settings
-* svn status, add -v and -u settings to show more info
 * svn resolve
     * this would be a new window with 3 groups
     * left and right groups are read only

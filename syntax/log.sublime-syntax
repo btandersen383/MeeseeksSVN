@@ -8,16 +8,14 @@ hidden: true
 contexts:
   main:
     - match: '^-*$'
-      push: title
-    - match: '@'
+      push: divider
+    - match: 'r[0-9*]'
       push: header
-    - match: ^\+
-      push: added
-    - match: ^-
-      push: deleted
+    - match: 'Changed paths:'
+      push: changes
 
-  title:
-    - meta_scope: msg.title
+  divider:
+    - meta_scope: msg.divider
     - match: '[\r\n]'
       pop: true
 
@@ -26,17 +24,7 @@ contexts:
     - match: '[\r\n]'
       pop: true
 
-  added:
-    - meta_scope: msg.added
-    - match: '[\r\n]'
-      pop: true
-
-  deleted:
-    - meta_scope: msg.deleted
-    - match: '[\r\n]'
-      pop: true
-
-  comment:
-    - meta_scope: msg.comment
-    - match: '[\r\n]'
+  changes:
+    - meta_scope: msg.changes
+    - match: '^[\r\n]'
       pop: true

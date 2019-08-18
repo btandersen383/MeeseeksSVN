@@ -15,7 +15,7 @@
                             {
                                 "command": "edit_settings", 
                                 "args": {
-                                    "base_file": "${packages}/MeeseeksSVN/keymaps/Default (${platform}).sublime-keymap",
+                                    "base_file": "${packages}/MeeseeksSVN/Default (Windows).sublime-keymap",
                                     "default": "{\n$0\n}\n"
                                 },
                                 "caption": "Key Bindings"

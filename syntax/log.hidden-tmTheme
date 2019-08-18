@@ -11,7 +11,7 @@
             <dict>
                 <key>background</key><string>#272822</string>
                 <key>foreground</key><string>#D7D7D7</string>
-                <key>caret</key><string>#F29718</string>
+                <key>caret</key><string>#F8F8F0</string>
                 <key>selection</key><string>#3E3D32</string>
                 <key>selectionBorder</key><string>#181E26</string>
                 <key>lineHighlight</key><string>#3E3D32</string>
@@ -20,7 +20,7 @@
 
         <dict>
             <key>scope</key>
-            <string>msg.modified</string>
+            <string>msg.divider</string>
             <key>settings</key>
             <dict>
                 <key>foreground</key><string>#4455FF</string>
@@ -29,19 +29,19 @@
 
         <dict>
             <key>scope</key>
-            <string>msg.deleted</string>
+            <string>msg.header</string>
             <key>settings</key>
             <dict>
-                <key>foreground</key><string>#FF5544</string>
+                <key>foreground</key><string>#FF8888</string>
             </dict>
         </dict>
         
         <dict>
             <key>scope</key>
-            <string>msg.title</string>
+            <string>msg.changes</string>
             <key>settings</key>
             <dict>
-                <key>foreground</key><string>#D7D7D7</string>
+                <key>foreground</key><string>#A6E22E</string>
             </dict>
         </dict>
     </array>

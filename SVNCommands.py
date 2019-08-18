@@ -9,6 +9,8 @@ STATUS_SYNTAX = 'Packages/MeeseeksSVN/syntax/status.sublime-syntax'
 STATUS_THEME = 'Packages/MeeseeksSVN/syntax/status.hidden-tmTheme'
 DIFF_SYNTAX = 'Packages/MeeseeksSVN/syntax/diff.sublime-syntax'
 DIFF_THEME = 'Packages/MeeseeksSVN/syntax/diff.hidden-tmTheme'
+LOG_SYNTAX = 'Packages/MeeseeksSVN/syntax/log.sublime-syntax'
+LOG_THEME = 'Packages/MeeseeksSVN/syntax/log.hidden-tmTheme'
 
 INSERTED_PNG = 'Packages/MeeseeksSVN/icons/inserted.png'
 DELETED_TOP_PNG = 'Packages/MeeseeksSVN/icons/deleted_top.png'
@@ -26,8 +28,7 @@ class MeeseeksCommand(sublime_plugin.WindowCommand):
         if svn_path is False:
             svn_path = 'svn'
 
-        # build command string
-        # need double quotes for globbing
+        # build command string, need double quotes for globbing
         command = svn_path+' '+command
         if flags is not '':
             command += ' '+flags
@@ -61,23 +62,30 @@ class SvnStatusCommand(MeeseeksCommand):
 
     def run(self, paths=None):
         """ Callback function for svn_status command """
+
         util.debug('Run status cmd')
 
         # get the path to show status
         file, file_name = util.get_files(paths)
-        # todo get verbose settings
-        out, status = self.run_command(command='status', files=file)
+        flags = ''
+        if (settings.get('status_set_verbose')):
+            flags = '-v'
+        out, status = self.run_command(command='status',
+                                       files=file, 
+                                       flags=flags)
 
         # set up and display output
         panel = sublime.active_window().create_output_panel('status')
         panel.set_syntax_file(STATUS_SYNTAX)
         panel.settings().set('color_scheme', STATUS_THEME)
-        sublime.active_window().run_command('show_panel',{'panel':'output.status'})
+        sublime.active_window().run_command('show_panel',
+                                            {'panel':'output.status'})
         out = self.format_info(out)
         panel.run_command('append', {'characters': out})
 
     def format_info(self, message):
         """ Returns html formatted string to display status report """
+
         message = message.split('\n')
         message.pop() # remove empty end string due to last \n
         html_message = ''
@@ -106,6 +114,7 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, paths=None):
         """ Callback to execute command """
+
         util.debug('Run show diff cmd')
 
         # get the file/folder path and name
@@ -139,13 +148,17 @@ class SvnGutterDiffCommand(MeeseeksCommand):
 
     def run(self):
         """ Callback to run command """
+
         util.debug('Run gutter diff cmd')
-        file = sublime.active_window().active_view().file_name().replace('\\', '/')
+        view = sublime.active_window().active_view()
+        file = view.file_name().replace('\\', '/')
 
         # create variable to change context size for easier processing
-        out, status = self.run_command(command='diff', files=file, flags='--diff-cmd=diff -x -U0')
+        out, status = self.run_command(command='diff', 
+                                       files=file, 
+                                       flags='--diff-cmd=diff -x -U0')
         added, removed = self.get_regions(out)
-        sublime.active_window().active_view().add_regions(
+        view.add_regions(
             key='inserted', regions=added, 
             scope='markup.inserted', icon=INSERTED_PNG, 
             flags=sublime.HIDDEN | sublime.PERSISTENT)
@@ -156,6 +169,7 @@ class SvnGutterDiffCommand(MeeseeksCommand):
 
     def get_regions(self, message):
         """ Gets the added and removed lines to mark """
+
         message = message.split('\n')
         message.pop() # get rid of empty string at end
         view = sublime.active_window().active_view()
@@ -173,13 +187,13 @@ class SvnGutterDiffCommand(MeeseeksCommand):
                 # multiple lines changed
                 if len(change) is 2:
                     for x in range(change[1]):
-                        point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
+                        point1 = view.text_point(change[0]-1, 0)
                         region = view.line(point1)#sublime.Region(point1, point1+1)
                         added.append(region)
                         change[0] += 1
                 # only one line changed
                 else:
-                    point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
+                    point1 = view.text_point(change[0]-1, 0)
                     region = view.line(point1)#sublime.Region(point1, point1+1)
                     added.append(region)
 
@@ -208,6 +222,8 @@ class SvnAddCommand(MeeseeksCommand):
     """ Command to add a file/folder to the svn commit """
 
     def run(self, paths=None):
+        """ Callback to run command """
+
         util.debug ('Run add cmd')
 
         file, file_name = util.get_files(paths)
@@ -239,7 +255,10 @@ class SvnCommitCommand(MeeseeksCommand):
     def commit(self, message):
         """ Called when commit message is ready """
         path = util.project_path()
-        out, status = self.run_command(command='commit', flags='-m', message=message, files=path)
+        out, status = self.run_command(command='commit', 
+                                       flags='-m', 
+                                       message=message, 
+                                       files=path)
         util.pop_info('File Committed', 'Commit Failed!', status)
 
     def cancel_commit(self):
@@ -288,13 +307,21 @@ class SvnLogCommand(sublime_plugin.TextCommand):
         util.debug ('Run log cmd')
 
         file, file_name = util.get_files(paths)
-        out, status = MeeseeksCommand.run_command(self, command='log', files=file)
+        flags = ''
+        if settings.get('log_set_verbose'):
+            flags = '-v'
+        out, status = MeeseeksCommand.run_command(self, 
+                                                  command='log', 
+                                                  files=file, 
+                                                  flags=flags)
 
         log_view = sublime.active_window().new_file()
         log_view.insert(edit, 0, out)
         log_view.set_name(file_name + ' - Log View')
         log_view.set_scratch(True)
         log_view.set_read_only(True)
+        log_view.set_syntax_file(LOG_SYNTAX)
+        log_view.settings().set('color_scheme', LOG_THEME)
 
 
 ################################################################################
@@ -302,7 +329,24 @@ class SvnBlameCommand(sublime_plugin.TextCommand):
     """ Command to show the blame log of the svn repo """
 
     def run(self, edit, paths=None):
-        print ("not imp")
+        """ Callback to run command """
+
+        util.debug ('Run blame cmd')
+
+        file, file_name = util.get_files(paths)
+        flags = ''
+        if settings.get('blame_set_verbose'):
+            flags = '-v'
+        out, status = MeeseeksCommand.run_command(self, 
+                                                  command='blame', 
+                                                  files=file, 
+                                                  flags=flags)
+
+        log_view = sublime.active_window().new_file()
+        log_view.insert(edit, 0, out)
+        log_view.set_name(file_name + ' - Log View')
+        log_view.set_scratch(True)
+        log_view.set_read_only(True)
 
 
 ################################################################################

@@ -350,20 +350,7 @@ class SvnBlameCommand(sublime_plugin.TextCommand):
 
 
 ################################################################################
-class MeeseeksEvents(sublime_plugin.EventListener):
-    """ Plan to have live updates, need to get run cmd working properly """
+class SvnCheckRemoteCommand(sublime_plugin.TextCommand):
+    """ Checks the remote copy for changes """
 
-    def on_load(self, view):
-        """ Set gutter diff on file load """
-        util.debug ('file loaded')
-        sublime.Window.run_command(view.window(), cmd='svn_gutter_diff')
-
-    def on_post_save(self, view):
-        """ Set gutter diff on file save """
-        util.debug ('file saved')
-        sublime.Window.run_command(view.window(), cmd='svn_gutter_diff')
-
-    def on_modified(self, view):
-        """ Set gutter diff on modification """
-        # slows everything down right now, looking for fix
-        util.debug ('file modified')
+    util.debug ('Check for remote updates')

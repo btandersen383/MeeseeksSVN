@@ -20,7 +20,7 @@ DELETED_TOP_PNG = 'Packages/MeeseeksSVN/icons/deleted_top.png'
 class MeeseeksCommand(sublime_plugin.WindowCommand):
     """ Used to fun abstract functions used by all commands """
 
-    def run_command(self, command, flags='', message='', files=None):
+    def run_command(self, command='', flags='', message='', files=None):
         """ Used to run a basic command line call to svn """
 
         # chech for user defined svn.exe
@@ -125,7 +125,7 @@ class SvnShowDiffCommand(sublime_plugin.TextCommand):
         out, status = MeeseeksCommand.run_command(self, 
                                           command='diff', 
                                           files=file, 
-                                          flags='--diff-cmd=diff -x -U'+str(lines))
+                                          flags='-x -U'+str(lines))
 
         # yes this is ugly but it works...
         out = out.replace('Index:', '\n\nIndex:')
@@ -156,7 +156,7 @@ class SvnGutterDiffCommand(MeeseeksCommand):
         # create variable to change context size for easier processing
         out, status = self.run_command(command='diff', 
                                        files=file, 
-                                       flags='--diff-cmd=diff -x -U0')
+                                       flags='-x -U0')
         added, removed = self.get_regions(out)
         view.add_regions(
             key='inserted', regions=added, 

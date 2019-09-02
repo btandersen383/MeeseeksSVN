@@ -1,4 +1,0 @@
-[
-    { "keys": ["alt+s"], "command": "svn_status" },
-    { "keys": ["alt+d"], "command": "svn_show_diff" },
-]

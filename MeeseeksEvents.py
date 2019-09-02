@@ -24,4 +24,4 @@ class MeeseeksEvents(sublime_plugin.EventListener):
         """ Set gutter diff on modification """
         # would be used to update gutter
         # slows everything down right now, looking for fix
-        util.debug ('file modified')
+        #util.debug ('file modified')

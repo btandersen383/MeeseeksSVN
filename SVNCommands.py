@@ -14,6 +14,7 @@ LOG_THEME = 'Packages/MeeseeksSVN/syntax/log.hidden-tmTheme'
 
 INSERTED_PNG = 'Packages/MeeseeksSVN/icons/inserted.png'
 DELETED_TOP_PNG = 'Packages/MeeseeksSVN/icons/deleted_top.png'
+DELETED_BOTTOM_PNG = 'Packages/MeeseeksSVN/icons/deleted_bottom.png'
 
 
 ################################################################################
@@ -160,12 +161,16 @@ class SvnGutterDiffCommand(MeeseeksCommand):
         added, removed = self.get_regions(out)
         view.add_regions(
             key='inserted', regions=added, 
-            scope='markup.inserted', icon=INSERTED_PNG, 
+            scope='markup.inserted', icon=INSERTED_PNG,
             flags=sublime.HIDDEN | sublime.PERSISTENT)
-        # sublime.active_window().active_view().add_regions(
-        #     key='inserted', regions=removed, 
-        #     scope='markup.deleted', icon=DELETED_TOP_PNG)#, 
-        #     #flags=sublime.HIDDEN | sublime.PERSISTENT)
+        view.add_regions(
+            key='deleted_lower', regions=lower_removed, # the lower line needs the top image
+            scope='markup.deleted', icon=DELETED_TOP_PNG,
+            flags=sublime.HIDDEN | sublime.PERSISTENT)
+        view.add_regions(
+            key='deleted_upper', regions=upper_removed, # the upper line needs the bottom image
+            scope='markup.deleted', icon=DELETED_BOTTOM_PNG,
+            flags=sublime.HIDDEN | sublime.PERSISTENT)
 
     def get_regions(self, message):
         """ Gets the added and removed lines to mark """
@@ -176,7 +181,8 @@ class SvnGutterDiffCommand(MeeseeksCommand):
         added = []
         removed = []
 
-        # cycle through each line
+         # cycle through each line
+        newFileLine = 0
         for index, mes in enumerate(message):
             line = message[index]
             # signal for a change
@@ -184,37 +190,23 @@ class SvnGutterDiffCommand(MeeseeksCommand):
                 beg = line.index('+')
                 end = line.index('@', beg)
                 change = [int(a) for a in line[beg+1:end-1].split(',')]
-                # multiple lines changed
-                if len(change) is 2:
-                    for x in range(change[1]):
-                        point1 = view.text_point(change[0]-1, 0)
-                        region = view.line(point1)#sublime.Region(point1, point1+1)
-                        added.append(region)
-                        change[0] += 1
-                # only one line changed
-                else:
-                    point1 = view.text_point(change[0]-1, 0)
-                    region = view.line(point1)#sublime.Region(point1, point1+1)
-                    added.append(region)
+                newFileLine = change[0]
 
-                    # one day i will get deleted lines working
-                # beg = line.index('-')
-                # end = line.index('+', beg)
-                # change = [int(a) for a in line[beg+1:end-1].split(',')]
-                # # multiple lines changed
-                # if len(change) is 2:
-                #     for x in range(change[1]):
-                #         point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
-                #         region = view.line(point1)#sublime.Region(point1, point1+1)
-                #         removed.append(region)
-                #         change[0] += 1
-                # # only one line changed
-                # else:
-                #     point1 = sublime.active_window().active_view().text_point(change[0]-1, 0)
-                #     region = view.line(point1)#sublime.Region(point1, point1+1)
-                #     removed.append(region)
+            elif line[0] is '+':
+                point = view.text_point(newFileLine-1, 0)
+                region = view.line(point)
+                added.append(region)
+                newFileLine += 1
 
-        return added, removed
+            elif line[0] is '-':
+                point = view.text_point(newFileLine-1, 0)
+                region = view.line(point)
+                upper_removed.append(region)
+                point = view.text_point(newFileLine, 0)
+                region = view.line(point)
+                lower_removed.append(region)
+
+        return added, upper_removed, lower_removed
 
 
 ################################################################################
